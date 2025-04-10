@@ -1,6 +1,5 @@
 package com.project.ceciferreyra.ceciferreyra.controller;
 
-import com.project.ceciferreyra.ceciferreyra.model.Type;
 import com.project.ceciferreyra.ceciferreyra.service.CloudinaryService;
 import com.project.ceciferreyra.ceciferreyra.service.IPieceService;
 import com.project.ceciferreyra.ceciferreyra.model.Piece;
