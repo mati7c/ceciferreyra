@@ -16,7 +16,13 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -30,33 +36,65 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(withDefaults())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Configuración CORS mejorada
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/piece/list").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/piece/list/**").permitAll()// ✅ Libre acceso
-                        .requestMatchers(HttpMethod.GET, "/exhibit/list").permitAll()// ✅ Libre acceso
-                        .requestMatchers(HttpMethod.POST, "/email/send").permitAll()// ✅ Libre acceso
-                        .requestMatchers(HttpMethod.POST, "/piece/save").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/piece/delete/**").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.POST, "/piece/delete").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.POST, "/exhibit/save").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/exhibit/delete/**").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .anyRequest().authenticated() // 🔒 Todo lo demás requiere autenticación
+                        .requestMatchers(HttpMethod.GET, "/piece/list/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/exhibit/list").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/email/send").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/piece/save").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/piece/delete/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/piece/delete").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/exhibit/save").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/exhibit/delete/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/api/logout") // ✅ Ruta de logout
+                        .logoutUrl("/api/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
+                            // Redirige al frontend después del logout
+                            response.sendRedirect("https://ceciferreyraart.vercel.app?logout=true");
                         })
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-                        .defaultSuccessUrl("https://ceciferreyraart.vercel.app/login", true) // ✅ Redirección tras login
+                        .successHandler(authenticationSuccessHandler()) // Manejador personalizado
                 );
 
         return http.build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList(
+                "https://ceciferreyraart.vercel.app",
+                "http://localhost:3030" // Para desarrollo local
+        ));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(Arrays.asList("Authorization"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    private AuthenticationSuccessHandler authenticationSuccessHandler() {
+        return (request, response, authentication) -> {
+            // 1. Generar token JWT si estás usando token-based (opcional)
+            // 2. Redirigir al frontend con parámetros necesarios
+            String targetUrl = "https://ceciferreyraart.vercel.app/login-success";
+
+            // Puedes agregar parámetros a la URL si necesitas pasar información
+            UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(targetUrl)
+                    .queryParam("auth", "success");
+
+            response.sendRedirect(builder.toUriString());
+        };
     }
 
     private OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
