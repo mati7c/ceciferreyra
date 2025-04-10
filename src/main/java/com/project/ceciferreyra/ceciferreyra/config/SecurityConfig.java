@@ -53,7 +53,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-                        .defaultSuccessUrl("https://ceciferryraart-frontend.vercel.app/login", true) // ✅ Redirección tras login
+                        .defaultSuccessUrl("https://ceciferreyraart.vercel.app/login", true) // ✅ Redirección tras login
                 );
 
         return http.build();
