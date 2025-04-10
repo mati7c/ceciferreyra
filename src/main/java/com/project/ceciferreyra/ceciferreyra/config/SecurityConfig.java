@@ -87,7 +87,7 @@ public class SecurityConfig {
         return (request, response, authentication) -> {
             // 1. Generar token JWT si estás usando token-based (opcional)
             // 2. Redirigir al frontend con parámetros necesarios
-            String targetUrl = "https://ceciferreyraart.vercel.app/login-success";
+            String targetUrl = "https://ceciferreyraart.vercel.app/login";
 
             // Puedes agregar parámetros a la URL si necesitas pasar información
             UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(targetUrl)
