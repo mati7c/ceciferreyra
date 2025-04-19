@@ -12,6 +12,10 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("user")
+@CrossOrigin(
+        origins = {"https://ceciferreyraart.vercel.app/", "http://localhost:3000"},
+        allowCredentials = "true"
+)
 public class UserController {
 
     @GetMapping("/info")
