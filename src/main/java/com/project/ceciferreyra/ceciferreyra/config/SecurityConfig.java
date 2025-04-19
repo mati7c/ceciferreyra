@@ -37,7 +37,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://ceciferreyraart.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://ceciferreyraart.vercel.app", "https://ceciferreyraart.vercel.app/info/user"));
         configuration.setAllowedOriginPatterns(Arrays.asList("http://localhost:3000", "https://ceciferreyraart.vercel.app"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -105,7 +105,7 @@ public class SecurityConfig {
                                 .authorizationRequestResolver(customAuthorizationRequestResolver)
                         )
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-                        .defaultSuccessUrl("https://ceciferreyraart.vercel.app/login", true)
+                        .defaultSuccessUrl("http://localhost:3000/login", true)
                 );
 
         return http.build();
