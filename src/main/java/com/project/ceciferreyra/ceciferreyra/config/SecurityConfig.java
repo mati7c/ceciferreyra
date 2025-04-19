@@ -83,6 +83,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/piece/list").permitAll()
                         .requestMatchers(HttpMethod.GET, "/piece/list/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/exhibit/list").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/user/info").permitAll()
                         .requestMatchers(HttpMethod.POST, "/email/send").permitAll()
                         .requestMatchers(HttpMethod.POST, "/piece/save").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/piece/delete/**").hasRole("ADMIN")
