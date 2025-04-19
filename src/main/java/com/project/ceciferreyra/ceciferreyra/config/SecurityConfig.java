@@ -1,10 +1,10 @@
 package com.project.ceciferreyra.ceciferreyra.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -12,7 +12,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
@@ -27,24 +31,51 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+
+        // Crear el resolver base
+        DefaultOAuth2AuthorizationRequestResolver defaultResolver =
+                new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
+
+        // Usar composición para personalizar sin heredar
+        OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver = new OAuth2AuthorizationRequestResolver() {
+            @Override
+            public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+                OAuth2AuthorizationRequest req = defaultResolver.resolve(request);
+                return customizeRequest(req);
+            }
+
+            @Override
+            public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
+                OAuth2AuthorizationRequest req = defaultResolver.resolve(request, clientRegistrationId);
+                return customizeRequest(req);
+            }
+
+            private OAuth2AuthorizationRequest customizeRequest(OAuth2AuthorizationRequest request) {
+                if (request == null) return null;
+                return OAuth2AuthorizationRequest.from(request)
+                        .additionalParameters(params -> params.put("prompt", "select_account"))
+                        .build();
+            }
+        };
+
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/piece/list").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/piece/list/**").permitAll()// ✅ Libre acceso
-                        .requestMatchers(HttpMethod.GET, "/exhibit/list").permitAll()// ✅ Libre acceso
-                        .requestMatchers(HttpMethod.POST, "/email/send").permitAll()// ✅ Libre acceso
-                        .requestMatchers(HttpMethod.POST, "/piece/save").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/piece/delete/**").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.POST, "/piece/delete").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.POST, "/exhibit/save").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .requestMatchers(HttpMethod.DELETE, "/exhibit/delete/**").hasRole("ADMIN")  // 🔒 Solo ADMIN
-                        .anyRequest().authenticated() // 🔒 Todo lo demás requiere autenticación
+                        .requestMatchers(HttpMethod.GET, "/piece/list/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/exhibit/list").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/email/send").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/piece/save").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/piece/delete/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/piece/delete").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/exhibit/save").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/exhibit/delete/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
                 .logout(logout -> logout
-                        .logoutUrl("/api/logout") // ✅ Ruta de logout
+                        .logoutUrl("/api/logout")
                         .logoutSuccessHandler((request, response, authentication) -> {
                             response.setStatus(HttpServletResponse.SC_OK);
                         })
@@ -52,8 +83,11 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                 )
                 .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(endpoint -> endpoint
+                                .authorizationRequestResolver(customAuthorizationRequestResolver)
+                        )
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-                        .defaultSuccessUrl("http://localhost:3000/login", true) // ✅ Redirección tras login
+                        .defaultSuccessUrl("https://ceciferreyraart.vercel.app//login", true)
                 );
 
         return http.build();
@@ -76,4 +110,3 @@ public class SecurityConfig {
         };
     }
 }
-
