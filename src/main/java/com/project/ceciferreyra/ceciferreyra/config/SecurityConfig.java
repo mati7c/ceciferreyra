@@ -37,7 +37,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("https://ceciferreyraart.vercel.app/", "https://ceciferreyraart.vercel.app", "http://localhost:3000"));
+        configuration.setAllowedOrigins(Arrays.asList("https://ceciferreyraart.vercel.app", "http://localhost:3000","https://accounts.google.com"));
         configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true); // 🔥 Esto es clave
