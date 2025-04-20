@@ -38,10 +38,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(Arrays.asList("https://ceciferreyraart.vercel.app/", "https://ceciferreyraart.vercel.app", "http://localhost:3000"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true); // 🔥 Esto es clave
-        configuration.setExposedHeaders(Arrays.asList("Authorization", "Set-Cookie")); // Opcional pero útil
+        configuration.setExposedHeaders(Arrays.asList("*")); // Opcional pero útil
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
@@ -104,7 +104,7 @@ public class SecurityConfig {
                                 .authorizationRequestResolver(customAuthorizationRequestResolver)
                         )
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-                        .defaultSuccessUrl("http://localhost:3000/login", true)
+                        .defaultSuccessUrl("https://ceciferreyraart.vercel.app/login", true)
                 );
 
         return http.build();
