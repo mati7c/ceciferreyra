@@ -1,6 +1,5 @@
 package com.project.ceciferreyra.ceciferreyra.config;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,11 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
@@ -40,41 +35,14 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(Arrays.asList("https://ceciferreyraart.vercel.app", "http://localhost:3000","https://accounts.google.com"));
         configuration.setAllowedMethods(Arrays.asList("*"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
-        configuration.setAllowCredentials(true); // 🔥 Esto es clave
-        configuration.setExposedHeaders(Arrays.asList("*")); // Opcional pero útil
+        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(Arrays.asList("*"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, ClientRegistrationRepository clientRegistrationRepository) throws Exception {
-
-        // Crear el resolver base
-        DefaultOAuth2AuthorizationRequestResolver defaultResolver =
-                new DefaultOAuth2AuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization");
-
-        // Usar composición para personalizar sin heredar
-        OAuth2AuthorizationRequestResolver customAuthorizationRequestResolver = new OAuth2AuthorizationRequestResolver() {
-            @Override
-            public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-                OAuth2AuthorizationRequest req = defaultResolver.resolve(request);
-                return customizeRequest(req);
-            }
-
-            @Override
-            public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-                OAuth2AuthorizationRequest req = defaultResolver.resolve(request, clientRegistrationId);
-                return customizeRequest(req);
-            }
-
-            private OAuth2AuthorizationRequest customizeRequest(OAuth2AuthorizationRequest request) {
-                if (request == null) return null;
-                return OAuth2AuthorizationRequest.from(request)
-                        .additionalParameters(params -> params.put("prompt", "select_account"))
-                        .build();
-            }
-        };
-
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
@@ -100,9 +68,6 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .authorizationEndpoint(endpoint -> endpoint
-                                .authorizationRequestResolver(customAuthorizationRequestResolver)
-                        )
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
                         .defaultSuccessUrl("https://ceciferreyraart.vercel.app/login", true)
                 );
