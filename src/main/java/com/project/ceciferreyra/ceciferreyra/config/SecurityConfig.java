@@ -69,7 +69,7 @@ public class SecurityConfig {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo.oidcUserService(this.oidcUserService()))
-                        .defaultSuccessUrl("https://ceciferreyraart.vercel.app/login", true)
+                        .defaultSuccessUrl("http://localhost:3000/login", true)
                 );
 
         return http.build();
