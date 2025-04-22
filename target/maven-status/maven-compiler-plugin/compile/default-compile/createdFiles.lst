@@ -1,0 +1,17 @@
+com\project\ceciferreyra\ceciferreyra\controller\EmailController.class
+com\project\ceciferreyra\ceciferreyra\model\EmailRequest.class
+com\project\ceciferreyra\ceciferreyra\service\IExhibitService.class
+com\project\ceciferreyra\ceciferreyra\controller\ExhibitController.class
+com\project\ceciferreyra\ceciferreyra\model\Piece.class
+com\project\ceciferreyra\ceciferreyra\service\PieceService.class
+com\project\ceciferreyra\ceciferreyra\service\EmailService.class
+com\project\ceciferreyra\ceciferreyra\CeciferreyraApplication.class
+com\project\ceciferreyra\ceciferreyra\repository\IExhibitRepository.class
+com\project\ceciferreyra\ceciferreyra\model\Exhibit.class
+com\project\ceciferreyra\ceciferreyra\config\SecurityConfig.class
+com\project\ceciferreyra\ceciferreyra\service\ExhibitService.class
+com\project\ceciferreyra\ceciferreyra\repository\IPieceRepository.class
+com\project\ceciferreyra\ceciferreyra\controller\PieceController.class
+com\project\ceciferreyra\ceciferreyra\controller\UserController.class
+com\project\ceciferreyra\ceciferreyra\service\CloudinaryService.class
+com\project\ceciferreyra\ceciferreyra\service\IPieceService.class
