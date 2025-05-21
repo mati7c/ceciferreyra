@@ -74,7 +74,7 @@ public class SecurityConfig {
                                     .oidcUserService(this.oidcUserService())    // Para Google
                                     .userService(this.oauth2UserService());    // Para GitHub
                         })
-                        .defaultSuccessUrl("https://ceciferreyraart.vercel.app/login", true)
+                        .defaultSuccessUrl("http://localhost:3000/login", true)
                 );
 
         return http.build();
